@@ -2,7 +2,7 @@ To use this you will need [libopenmpt](https://lib.openmpt.org/libopenmpt/2020/0
 
 I installed a few other things on ubuntu 20.04.
 
-This was my process for making a deb-file (works in `docker run --rm -it ubuntu`):
+This was my process for making a deb-file for ubuntu 20.04:
 
 ```
 docker run --rm -it -v ${PWD}:/root/work ubuntu:focal
