@@ -11,8 +11,8 @@ all: example_basic openmpt.lua ## build all demos
 test: openmpt.lua ## test the lua wrapper
 	luajit test.lua
 
-openmpt.lua: /usr/local/include/libopenmpt/libopenmpt.h openmpt-interface.lua ## lua bindings for native library
-	perl ~/bin/make_lua_ffi.pl $< && mv libopenmpt_h.lua $@ && echo "\n\n" >> $@ && cat openmpt-interface.lua >> $@
+openmpt.lua: /usr/include/libopenmpt/libopenmpt.h openmpt-interface.lua ## lua bindings for native library
+	perl ./make_lua_ffi.pl $< && mv libopenmpt_h.lua $@ && echo "\n\n" >> $@ && cat openmpt-interface.lua >> $@
 
 example_basic: example_basic.c ## build demo program that checks song header
 	gcc -o $@ $(shell pkg-config --cflags --libs libopenmpt) $<
