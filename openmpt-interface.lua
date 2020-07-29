@@ -1,11 +1,16 @@
+local openmpt = ffi.load("openmpt")
+
 function Openmpt (filename)
-  o = {}
+  local f = io.open (filename, 'r')
+  contents = f:read()
+  f:close()
+
+  o = {
+    filename = filename,
+    module = openmpt.openmpt_module_create_from_memory2(contents, #contents, nil, nil, nil)
+  }
   setmetatable(o, self)
   self.__index = self
-  self.filename = filename
-  local f = io.open (filename, 'r')
-  self.module = ffi.C.printf(f:read())
-  f:close()
   return o
 end
 
