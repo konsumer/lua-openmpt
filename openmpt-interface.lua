@@ -1,1 +1,0 @@
-openmpt = ffi.load("openmpt")
