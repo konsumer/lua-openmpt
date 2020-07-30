@@ -1,3 +1,9 @@
-To use this you will need [libopenmpt](https://lib.openmpt.org/libopenmpt/) on Ubuntu I ran `apt install libopenmpt-dev`.
+# lua-openmpt
 
-run `luajit test.lua` to test it out.
+This is a lua wrapper for [libopenmpt](https://lib.openmpt.org/libopenmpt/). It will allow you to parse and play various mod files.
+
+## usage
+
+On Ubuntu I ran `apt install libopenmpt-dev`.
+
+Run `luajit test.lua` to test it out.
