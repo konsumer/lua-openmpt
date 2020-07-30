@@ -1,1 +1,1 @@
-local openmpt = ffi.load("openmpt")
+openmpt = ffi.load("openmpt")
