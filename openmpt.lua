@@ -438,7 +438,6 @@ local function str_split(str, sep)
     return res 
 end
 
-
 local OpenMpt = {}
 OpenMpt.__index = OpenMpt
 
@@ -489,54 +488,82 @@ end
 -- TODO: smarter ctl using types from https://lib.openmpt.org/doc/group__libopenmpt__c.html#ga9a7a95ee4073243b1193120c9107ce99
 
 function OpenMpt:ctl_get(ctl)
-  return ffi.string(self.openmpt.openmpt_module_ctl_get(self.module, ctl))
+  if ctl == "load.skip_samples" then
+    return self.openmpt.openmpt_module_ctl_get_boolean(self.module, "load.skip_samples")
+  end
+  if ctl == "load.skip_patterns" then
+    return self.openmpt.openmpt_module_ctl_get_boolean(self.module, "load.skip_patterns")
+  end
+  if ctl == "load.skip_plugins" then
+    return self.openmpt.openmpt_module_ctl_get_boolean(self.module, "load.skip_plugins")
+  end
+  if ctl == "load.skip_subsongs_init" then
+    return self.openmpt.openmpt_module_ctl_get_boolean(self.module, "load.skip_subsongs_init")
+  end
+  if ctl == "seek.sync_samples" then
+    return self.openmpt.openmpt_module_ctl_get_boolean(self.module, "seek.sync_samples")
+  end
+  if ctl == "subsong" then
+    return self.openmpt.openmpt_module_ctl_get_integer(self.module, "subsong")
+  end
+  if ctl == "play.at_end" then
+    return self.openmpt.openmpt_module_ctl_get_text(self.module, "play.at_end")
+  end
+  if ctl == "play.tempo_factor" then
+    return self.openmpt.openmpt_module_ctl_get_floatingpoint(self.module, "play.tempo_factor")
+  end
+  if ctl == "play.pitch_factor" then
+    return self.openmpt.openmpt_module_ctl_get_floatingpoint(self.module, "play.pitch_factor")
+  end
+  if ctl == "render.resampler.emulate_amiga" then
+    return self.openmpt.openmpt_module_ctl_get_boolean(self.module, "render.resampler.emulate_amiga")
+  end
+  if ctl == "render.resampler.emulate_amiga_type" then
+    return self.openmpt.openmpt_module_ctl_get_text(self.module, "render.resampler.emulate_amiga_type")
+  end
+  if ctl == "dither" then
+    return self.openmpt.openmpt_module_ctl_get_integer(self.module, "dither")
+  end
 end
-
-
-function OpenMpt:ctl_get_boolean(ctl)
-  return self.openmpt.openmpt_module_ctl_get_boolean(self.module, ctl)
-end
-
-
-function OpenMpt:ctl_get_floatingpoint(stl)
-  return self.openmpt.openmpt_module_ctl_get_floatingpoint(self.module, ctl)
-end
-
-
-function OpenMpt:ctl_get_integer(ctl)
-  return self.openmpt.openmpt_module_ctl_get_integer(self.module, ctl)
-end
-
-
-function OpenMpt:ctl_get_text(ctl)
-  return self.openmpt.openmpt_module_ctl_get_text(self.module, ctl)
-end
-
 
 function OpenMpt:ctl_set(ctl, value)
-  return self.openmpt.openmpt_module_ctl_set(self.module, ctl, value)
+  if ctl == "load.skip_samples" then
+    return self.openmpt.openmpt_module_ctl_set_boolean(self.module, "load.skip_samples", value)
+  end
+  if ctl == "load.skip_patterns" then
+    return self.openmpt.openmpt_module_ctl_set_boolean(self.module, "load.skip_patterns", value)
+  end
+  if ctl == "load.skip_plugins" then
+    return self.openmpt.openmpt_module_ctl_set_boolean(self.module, "load.skip_plugins", value)
+  end
+  if ctl == "load.skip_subsongs_init" then
+    return self.openmpt.openmpt_module_ctl_set_boolean(self.module, "load.skip_subsongs_init", value)
+  end
+  if ctl == "seek.sync_samples" then
+    return self.openmpt.openmpt_module_ctl_set_boolean(self.module, "seek.sync_samples", value)
+  end
+  if ctl == "subsong" then
+    return self.openmpt.openmpt_module_ctl_set_integer(self.module, "subsong", value)
+  end
+  if ctl == "play.at_end" then
+    return self.openmpt.openmpt_module_ctl_set_text(self.module, "play.at_end", value)
+  end
+  if ctl == "play.tempo_factor" then
+    return self.openmpt.openmpt_module_ctl_set_floatingpoint(self.module, "play.tempo_factor", value)
+  end
+  if ctl == "play.pitch_factor" then
+    return self.openmpt.openmpt_module_ctl_set_floatingpoint(self.module, "play.pitch_factor", value)
+  end
+  if ctl == "render.resampler.emulate_amiga" then
+    return self.openmpt.openmpt_module_ctl_set_boolean(self.module, "render.resampler.emulate_amiga", value)
+  end
+  if ctl == "render.resampler.emulate_amiga_type" then
+    return self.openmpt.openmpt_module_ctl_set_text(self.module, "render.resampler.emulate_amiga_type", value)
+  end
+  if ctl == "dither" then
+    return self.openmpt.openmpt_module_ctl_set_integer(self.module, "dither", value)
+  end
 end
-
-
-function OpenMpt:ctl_set_boolean(ctl, value)
-  return self.openmpt.openmpt_module_ctl_set_boolean(self.module, ctl, value)
-end
-
-
-function OpenMpt:ctl_set_floatingpoint(ctl, value)
-  return self.openmpt.openmpt_module_ctl_set_floatingpoint(self.module, ctl, value)
-end
-
-
-function OpenMpt:ctl_set_integer(ctl, value)
-  return self.openmpt.openmpt_module_ctl_set_integer(self.module, ctl, value)
-end
-
-
-function OpenMpt:ctl_set_text(ctl, value)
-  return self.openmpt.openmpt_module_ctl_set_text(self.module, ctl, value)
-end
-
 
 function OpenMpt:destroy()
   return self.openmpt.openmpt_module_destroy(self.module)
