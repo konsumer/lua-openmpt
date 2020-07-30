@@ -424,6 +424,20 @@ FFI_INCLUDED["/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platfo
 FFI_INCLUDED["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.0/include/__stddef_max_align_t.h"] = true
 FFI_INCLUDED["/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/i386/types.h"] = true
  
+local function str_split(str, sep)
+    if sep == nil then
+        sep = '%s'
+    end 
+
+    local res = {}
+    local func = function(w)
+        table.insert(res, w)
+    end 
+
+    string.gsub(str, '[^'..sep..']+', func)
+    return res 
+end
+
 
 local OpenMpt = {}
 OpenMpt.__index = OpenMpt
@@ -442,15 +456,391 @@ function OpenMpt:new(filename)
     return this
 end
 
-function OpenMpt:speed()
+-- Get meta-info about engine
+function OpenMpt:engine_info()
+  return {
+    library_version = ffi.string(self.openmpt.openmpt_get_string("library_version")), -- verbose library version string
+    library_version_is_release = ffi.string(self.openmpt.openmpt_get_string("library_version_is_release")), -- "1" if the version is an officially released version
+    library_features = ffi.string(self.openmpt.openmpt_get_string("library_features")), -- verbose library features string
+    core_version = ffi.string(self.openmpt.openmpt_get_string("core_version")), -- verbose OpenMPT core version string
+    source_url = ffi.string(self.openmpt.openmpt_get_string("source_url")), -- original source code URL
+    source_date = ffi.string(self.openmpt.openmpt_get_string("source_date")), -- original source code date
+    source_revision = ffi.string(self.openmpt.openmpt_get_string("source_revision")), -- original source code revision
+    source_is_modified = ffi.string(self.openmpt.openmpt_get_string("source_is_modified")), -- "1" if the original source has been modified
+    source_has_mixed_revisions = ffi.string(self.openmpt.openmpt_get_string("source_has_mixed_revisions")), -- "1" if the original source has been compiled from different various revision
+    source_is_package = ffi.string(self.openmpt.openmpt_get_string("source_is_package")), -- "1" if the original source has been obtained from a source pacakge instead of source code version control
+    build = ffi.string(self.openmpt.openmpt_get_string("build")), -- information about the current build (e.g. the build date or compiler used)
+    build_compiler = ffi.string(self.openmpt.openmpt_get_string("build_compiler")), -- information about the compiler used to build libopenmpt
+    credits = ffi.string(self.openmpt.openmpt_get_string("credits")), -- all contributors
+    contact = ffi.string(self.openmpt.openmpt_get_string("contact")), -- contact information about libopenmpt
+    license = ffi.string(self.openmpt.openmpt_get_string("license")), -- the libopenmpt license
+    url = ffi.string(self.openmpt.openmpt_get_string("url")), -- libopenmpt website URL
+    support_forum_url = ffi.string(self.openmpt.openmpt_get_string("support_forum_url")), -- libopenmpt support and discussions forum URL
+    bugtracker_url = ffi.string(self.openmpt.openmpt_get_string("bugtracker_url")), -- libopenmpt bug and issue tracker URL
+  }
+end
+
+-- get list of supported file-extensions
+function OpenMpt:supported_extensions()
+  return str_split(ffi.string(self.openmpt.openmpt_get_supported_extensions()), ";")
+end
+
+-- TODO: no type-conversion, yet. also many are buffer-transfers, but should be returns
+
+function OpenMpt:ctl_get(ctl)
+  return self.openmpt.openmpt_module_ctl_get(self.module, ctl)
+end
+
+
+function OpenMpt:ctl_get_boolean(ctl)
+  return self.openmpt.openmpt_module_ctl_get_boolean(self.module, ctl)
+end
+
+
+function OpenMpt:ctl_get_floatingpoint(stl)
+  return self.openmpt.openmpt_module_ctl_get_floatingpoint(self.module, ctl)
+end
+
+
+function OpenMpt:ctl_get_integer(ctl)
+  return self.openmpt.openmpt_module_ctl_get_integer(self.module, ctl)
+end
+
+
+function OpenMpt:ctl_get_text(ctl)
+  return self.openmpt.openmpt_module_ctl_get_text(self.module, ctl)
+end
+
+
+function OpenMpt:ctl_set(ctl, value)
+  return self.openmpt.openmpt_module_ctl_set(self.module, ctl, value)
+end
+
+
+function OpenMpt:ctl_set_boolean(ctl, value)
+  return self.openmpt.openmpt_module_ctl_set_boolean(self.module, ctl, value)
+end
+
+
+function OpenMpt:ctl_set_floatingpoint(ctl, value)
+  return self.openmpt.openmpt_module_ctl_set_floatingpoint(self.module, ctl, value)
+end
+
+
+function OpenMpt:ctl_set_integer(ctl, value)
+  return self.openmpt.openmpt_module_ctl_set_integer(self.module, ctl, value)
+end
+
+
+function OpenMpt:ctl_set_text(ctl, value)
+  return self.openmpt.openmpt_module_ctl_set_text(self.module, ctl, value)
+end
+
+
+function OpenMpt:destroy()
+  return self.openmpt.openmpt_module_destroy(self.module)
+end
+
+
+function OpenMpt:error_clear()
+  return self.openmpt.openmpt_module_error_clear(self.module)
+end
+
+
+function OpenMpt:error_get_last()
+  return self.openmpt.openmpt_module_error_get_last(self.module)
+end
+
+
+function OpenMpt:error_get_last_message()
+  return self.openmpt.openmpt_module_error_get_last_message(self.module)
+end
+
+
+function OpenMpt:error_set_last(error)
+  return self.openmpt.openmpt_module_error_set_last(self.module, error)
+end
+
+
+function OpenMpt:format_pattern_row_channel(pattern, row, channel, width, pad)
+  return self.openmpt.openmpt_module_format_pattern_row_channel(self.module, pattern, row, channel, width, pad)
+end
+
+
+function OpenMpt:format_pattern_row_channel_command(pattern, row, channel, command)
+  return self.openmpt.openmpt_module_format_pattern_row_channel_command(self.module, pattern, row, channel, command)
+end
+
+
+function OpenMpt:get_channel_name(index)
+  return self.openmpt.openmpt_module_get_channel_name(self.module, index)
+end
+
+
+function OpenMpt:get_ctls()
+  return self.openmpt.openmpt_module_get_ctls(self.module)
+end
+
+
+function OpenMpt:get_current_channel_vu_left(channel)
+  return self.openmpt.openmpt_module_get_current_channel_vu_left(self.module, channel)
+end
+
+
+function OpenMpt:get_current_channel_vu_mono(channel)
+  return self.openmpt.openmpt_module_get_current_channel_vu_mono(self.module, channel)
+end
+
+
+function OpenMpt:get_current_channel_vu_rear_left(channel)
+  return self.openmpt.openmpt_module_get_current_channel_vu_rear_left(self.module, channel)
+end
+
+
+function OpenMpt:get_current_channel_vu_rear_right(channel)
+  return self.openmpt.openmpt_module_get_current_channel_vu_rear_right(self.module, channel)
+end
+
+
+function OpenMpt:get_current_channel_vu_right(channel)
+  return self.openmpt.openmpt_module_get_current_channel_vu_right(self.module)
+end
+
+
+function OpenMpt:get_current_estimated_bpm()
+  return self.openmpt.openmpt_module_get_current_estimated_bpm(self.module)
+end
+
+
+function OpenMpt:get_current_order()
+  return self.openmpt.openmpt_module_get_current_order(self.module)
+end
+
+
+function OpenMpt:get_current_pattern()
+  return self.openmpt.openmpt_module_get_current_pattern(self.module)
+end
+
+
+function OpenMpt:get_current_playing_channels()
+  return self.openmpt.openmpt_module_get_current_playing_channels(self.module)
+end
+
+
+function OpenMpt:get_current_row()
+  return self.openmpt.openmpt_module_get_current_row(self.module)
+end
+
+
+function OpenMpt:get_current_speed()
   return self.openmpt.openmpt_module_get_current_speed(self.module)
 end
 
-function OpenMpt:tempo()
+
+function OpenMpt:get_current_tempo()
   return self.openmpt.openmpt_module_get_current_tempo(self.module)
 end
 
+
+function OpenMpt:get_duration_seconds()
+  return self.openmpt.openmpt_module_get_duration_seconds(self.module)
+end
+
+
+function OpenMpt:get_instrument_name(index)
+  return self.openmpt.openmpt_module_get_instrument_name(self.module, index)
+end
+
+-- possible values (use get_metadata_keys):
+-- type: Module format extension (e.g. it)
+-- type_long: Format name associated with the module format (e.g. Impulse Tracker)
+-- originaltype: Module format extension (e.g. it) of the original module in case the actual type is a converted format (e.g. mo3 or gdm)
+-- originaltype_long: Format name associated with the module format (e.g. Impulse Tracker) of the original module in case the actual type is a converted format (e.g. mo3 or gdm)
+-- container: Container format the module file is embedded in, if any (e.g. umx)
+-- container_long: Full container name if the module is embedded in a container (e.g. Unreal Music)
+-- tracker: Tracker that was (most likely) used to save the module file, if known
+-- artist: Author of the module
+-- title: Module title
+-- date: Date the module was last saved, in ISO-8601 format.
+-- message: Song message. If the song message is empty or the module format does not support song messages, a list of instrument and sample names is returned instead.
+-- message_raw: Song message. If the song message is empty or the module format does not support song messages, an empty string is returned.
+-- warnings: A list of warnings that were generated while loading the module.
+function OpenMpt:get_metadata(key)
+  return self.openmpt.openmpt_module_get_metadata(self.module, key)
+end
+
+
+function OpenMpt:get_metadata_keys()
+  return self.openmpt.openmpt_module_get_metadata_keys(self.module)
+end
+
+
+function OpenMpt:get_num_channels()
+  return self.openmpt.openmpt_module_get_num_channels(self.module)
+end
+
+
+function OpenMpt:get_num_instruments()
+  return self.openmpt.openmpt_module_get_num_instruments(self.module)
+end
+
+
+function OpenMpt:get_num_orders()
+  return self.openmpt.openmpt_module_get_num_orders(self.module)
+end
+
+
+function OpenMpt:get_num_patterns()
+  return self.openmpt.openmpt_module_get_num_patterns(self.module)
+end
+
+
+function OpenMpt:get_num_samples()
+  return self.openmpt.openmpt_module_get_num_samples(self.module)
+end
+
+
+function OpenMpt:get_num_subsongs()
+  return self.openmpt.openmpt_module_get_num_subsongs(self.module)
+end
+
+
+function OpenMpt:get_order_name(index)
+  return self.openmpt.openmpt_module_get_order_name(self.module, index)
+end
+
+
+function OpenMpt:get_order_pattern(order)
+  return self.openmpt.openmpt_module_get_order_pattern(self.module, order)
+end
+
+
+function OpenMpt:get_pattern_name(index)
+  return self.openmpt.openmpt_module_get_pattern_name(self.module, index)
+end
+
+
+function OpenMpt:get_pattern_num_rows(pattern)
+  return self.openmpt.openmpt_module_get_pattern_num_rows(self.module, pattern)
+end
+
+
+function OpenMpt:get_pattern_row_channel_command(pattern, row, channel, command)
+  return self.openmpt.openmpt_module_get_pattern_row_channel_command(self.module, pattern, row, channel, command)
+end
+
+
+function OpenMpt:get_position_seconds()
+  return self.openmpt.openmpt_module_get_position_seconds(self.module)
+end
+
+
+function OpenMpt:get_render_param(pattern, value)
+  return self.openmpt.openmpt_module_get_render_param(self.module, pattern, value)
+end
+
+
+function OpenMpt:get_repeat_count()
+  return self.openmpt.openmpt_module_get_repeat_count(self.module)
+end
+
+
+function OpenMpt:get_sample_name(index)
+  return self.openmpt.openmpt_module_get_sample_name(self.module, index)
+end
+
+
+function OpenMpt:get_selected_subsong()
+  return self.openmpt.openmpt_module_get_selected_subsong(self.module)
+end
+
+
+function OpenMpt:get_subsong_name(index)
+  return self.openmpt.openmpt_module_get_subsong_name(self.modulem, index)
+end
+
+
+function OpenMpt:highlight_pattern_row_channel(pattern, row, channel, width, pad)
+  return self.openmpt.openmpt_module_highlight_pattern_row_channel(self.module, pattern, row, channel, width, pad)
+end
+
+
+function OpenMpt:highlight_pattern_row_channel_command(pattern, row, channel, command)
+  return self.openmpt.openmpt_module_highlight_pattern_row_channel_command(self.module, pattern, row, channel, command)
+end
+
+
+function OpenMpt:read_float_mono(samplerate, count, mono)
+  return self.openmpt.openmpt_module_read_float_mono(self.module, samplerate, count, mono)
+end
+
+
+function OpenMpt:read_float_quad(samplerate, count, left, right, rear_left, rear_right)
+  return self.openmpt.openmpt_module_read_float_quad(self.module, samplerate, count, left, right, rear_left, rear_right)
+end
+
+
+function OpenMpt:read_float_stereo(samplerate, count, left, right)
+  return self.openmpt.openmpt_module_read_float_stereo(self.module)
+end
+
+
+function OpenMpt:read_interleaved_float_quad(samplerate, count, interleaved_quad)
+  return self.openmpt.openmpt_module_read_interleaved_float_quad(self.module, samplerate, count, interleaved_quad)
+end
+
+
+function OpenMpt:read_interleaved_float_stereo(samplerate, count, interleaved_stereo)
+  return self.openmpt.openmpt_module_read_interleaved_float_stereo(self.module, samplerate, count, interleaved_stereo)
+end
+
+
+function OpenMpt:read_interleaved_quad(samplerate, count, interleaved_quad)
+  return self.openmpt.openmpt_module_read_interleaved_quad(self.module, samplerate, count, interleaved_quad)
+end
+
+
+function OpenMpt:read_interleaved_stereo(samplerate, count, interleaved_stereo)
+  return self.openmpt.openmpt_module_read_interleaved_stereo(self.module, samplerate, count, interleaved_stereo)
+end
+
+
+function OpenMpt:read_mono(samplerate, count, mono)
+  return self.openmpt.openmpt_module_read_mono(self.module, samplerate, count, mono)
+end
+
+
+function OpenMpt:read_quad(samplerate, count, left, right, rear_left, rear_right)
+  return self.openmpt.openmpt_module_read_quad(self.module, samplerate, count, left, right, rear_left, rear_right)
+end
+
+
+function OpenMpt:read_stereo(samplerate, count, left, right)
+  return self.openmpt.openmpt_module_read_stereo(self.module, samplerate, count, left, right)
+end
+
+
+function OpenMpt:select_subsong(subsong)
+  return self.openmpt.openmpt_module_select_subsong(self.module, subsong)
+end
+
+function OpenMpt:set_position_order_row(order, row)
+  return self.openmpt.openmpt_module_set_position_order_row(self.module, order, row)
+end
+
+
+function OpenMpt:set_position_seconds(seconds)
+  return self.openmpt.openmpt_module_set_position_seconds(self.module, seconds)
+end
+
+
+function OpenMpt:set_render_param(param, value)
+  return self.openmpt.openmpt_module_set_render_param(self.module, param, value)
+end
+
+
+function OpenMpt:set_repeat_count(repeat_count)
+  return self.openmpt.openmpt_module_set_repeat_count(self.module, repeat_count)
+end
+
 return OpenMpt
-
-
-
