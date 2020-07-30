@@ -486,9 +486,10 @@ function OpenMpt:supported_extensions()
 end
 
 -- TODO: no type-conversion, yet. also many are buffer-transfers, but should be returns
+-- TODO: smarter ctl using types from https://lib.openmpt.org/doc/group__libopenmpt__c.html#ga9a7a95ee4073243b1193120c9107ce99
 
 function OpenMpt:ctl_get(ctl)
-  return self.openmpt.openmpt_module_ctl_get(self.module, ctl)
+  return ffi.string(self.openmpt.openmpt_module_ctl_get(self.module, ctl))
 end
 
 
@@ -578,7 +579,7 @@ end
 
 
 function OpenMpt:get_ctls()
-  return self.openmpt.openmpt_module_get_ctls(self.module)
+  return str_split(ffi.string(self.openmpt.openmpt_module_get_ctls(self.module)), ';')
 end
 
 
