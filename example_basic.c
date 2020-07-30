@@ -1,14 +1,14 @@
 /*
- * libopenmpt_example_c_stdout.c
- * -----------------------------
- * Purpose: libopenmpt C API simple example
- * Notes  : This example writes raw 48000Hz / stereo / 16bit native endian PCM data to stdout.
+ * libopenmpt_example_c.c
+ * ----------------------
+ * Purpose: libopenmpt C API example
+ * Notes  : PortAudio is used for sound output.
  * Authors: OpenMPT Devs
  * The OpenMPT source code is released under the BSD license. Read LICENSE for more details.
  */
 
 /*
- * Usage: libopenmpt_example_c_stdout SOMEMODULE | aplay --file-type raw --format=dat
+ * Usage: libopenmpt_example_c SOMEMODULE
  */
 
 #include <memory.h>
@@ -17,40 +17,60 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <errno.h>
-#include <unistd.h>
-
 #include <libopenmpt/libopenmpt.h>
 #include <libopenmpt/libopenmpt_stream_callbacks_file.h>
+
+#include <portaudio.h>
 
 #define BUFFERSIZE 480
 #define SAMPLERATE 48000
 
+static int16_t left[BUFFERSIZE];
+static int16_t right[BUFFERSIZE];
+static int16_t * const buffers[2] = { left, right };
+static int16_t interleaved_buffer[BUFFERSIZE * 2];
+static int is_interleaved = 0;
+
 static void libopenmpt_example_logfunc( const char * message, void * userdata ) {
-  (void)userdata;
-
-  if ( message ) {
-    fprintf( stderr, "%s\n", message );
-  }
+	(void)userdata;
+	if ( message ) {
+		fprintf( stderr, "openmpt: %s\n", message );
+	}
 }
 
-static ssize_t xwrite( int fd, const void * buffer, size_t size ) {
-  size_t written = 0;
-  ssize_t retval = 0;
-  while ( written < size ) {
-    retval = write( fd, (const char *)buffer + written, size - written );
-    if ( retval < 0 ) {
-      if ( errno != EINTR ) {
-        break;
-      }
-      retval = 0;
-    }
-    written += retval;
-  }
-  return written;
+static int libopenmpt_example_errfunc( int error, void * userdata ) {
+	(void)userdata;
+	(void)error;
+	return OPENMPT_ERROR_FUNC_RESULT_DEFAULT & ~OPENMPT_ERROR_FUNC_RESULT_LOG;
 }
 
-static int16_t buffer[BUFFERSIZE * 2];
+static void libopenmpt_example_print_error( const char * func_name, int mod_err, const char * mod_err_str ) {
+	if ( !func_name ) {
+		func_name = "unknown function";
+	}
+	if ( mod_err == OPENMPT_ERROR_OUT_OF_MEMORY ) {
+		mod_err_str = openmpt_error_string( mod_err );
+		if ( !mod_err_str ) {
+			fprintf( stderr, "Error: %s\n", "OPENMPT_ERROR_OUT_OF_MEMORY" );
+		} else {
+			fprintf( stderr, "Error: %s\n", mod_err_str );
+			openmpt_free_string( mod_err_str );
+			mod_err_str = NULL;
+		}
+	} else {
+		if ( !mod_err_str ) {
+			mod_err_str = openmpt_error_string( mod_err );
+			if ( !mod_err_str ) {
+				fprintf( stderr, "Error: %s failed.\n", func_name );
+			} else {
+				fprintf( stderr, "Error: %s failed: %s\n", func_name, mod_err_str );
+			}
+			openmpt_free_string( mod_err_str );
+			mod_err_str = NULL;
+		}
+		fprintf( stderr, "Error: %s failed: %s\n", func_name, mod_err_str );
+	}
+}
 
 #if ( defined( _WIN32 ) || defined( WIN32 ) ) && ( defined( _UNICODE ) || defined( UNICODE ) )
 int wmain( int argc, wchar_t * argv[] ) {
@@ -58,78 +78,132 @@ int wmain( int argc, wchar_t * argv[] ) {
 int main( int argc, char * argv[] ) {
 #endif
 
-  int result = 0;
-  FILE * file = 0;
-  openmpt_module * mod = 0;
-  size_t count = 0;
-  size_t written = 0;
+	int result = 0;
+	FILE * file = 0;
+	openmpt_module * mod = 0;
+	int mod_err = OPENMPT_ERROR_OK;
+	const char * mod_err_str = NULL;
+	size_t count = 0;
+	PaError pa_error = paNoError;
+	int pa_initialized = 0;
+	PaStream * stream = 0;
 
-  if ( argc != 2 ) {
-    fprintf( stderr, "Error: %s\n", "Wrong invocation. Use 'libopenmpt_example_c_stdout SOMEMODULE'." );
-    goto fail;
-  }
+	if ( argc != 2 ) {
+		fprintf( stderr, "Error: %s\n", "Wrong invocation. Use 'libopenmpt_example_c SOMEMODULE'." );
+		goto fail;
+	}
 
 #if ( defined( _WIN32 ) || defined( WIN32 ) ) && ( defined( _UNICODE ) || defined( UNICODE ) )
-  if ( wcslen( argv[1] ) == 0 ) {
-    fprintf( stderr, "Error: %s\n", "Wrong invocation. Use 'libopenmpt_example_c_stdout SOMEMODULE'." );
-    goto fail;
-  }
-  file = _wfopen( argv[1], L"rb" );
+	if ( wcslen( argv[1] ) == 0 ) {
+		fprintf( stderr, "Error: %s\n", "Wrong invocation. Use 'libopenmpt_example_c SOMEMODULE'." );
+		goto fail;
+	}
+	file = _wfopen( argv[1], L"rb" );
 #else
-  if ( strlen( argv[1] ) == 0 ) {
-    fprintf( stderr, "Error: %s\n", "Wrong invocation. Use 'libopenmpt_example_c_stdout SOMEMODULE'." );
-    goto fail;
-  }
-  file = fopen( argv[1], "rb" );
+	if ( strlen( argv[1] ) == 0 ) {
+		fprintf( stderr, "Error: %s\n", "Wrong invocation. Use 'libopenmpt_example_c SOMEMODULE'." );
+		goto fail;
+	}
+	file = fopen( argv[1], "rb" );
 #endif
-  if ( !file ) {
-    fprintf( stderr, "Error: %s\n", "fopen() failed." );
-    goto fail;
-  }
+	if ( !file ) {
+		fprintf( stderr, "Error: %s\n", "fopen() failed." );
+		goto fail;
+	}
 
-  mod = openmpt_module_create( openmpt_stream_get_file_callbacks(), file, &libopenmpt_example_logfunc, NULL, NULL );
-  if ( !mod ) {
-    fprintf( stderr, "Error: %s\n", "openmpt_module_create() failed." );
-    goto fail;
-  }
+	mod = openmpt_module_create2( openmpt_stream_get_file_callbacks(), file, &libopenmpt_example_logfunc, NULL, &libopenmpt_example_errfunc, NULL, &mod_err, &mod_err_str, NULL );
+	if ( !mod ) {
+		libopenmpt_example_print_error( "openmpt_module_create2()", mod_err, mod_err_str );
+		openmpt_free_string( mod_err_str );
+		mod_err_str = NULL;
+		goto fail;
+	}
+	openmpt_module_set_error_func( mod, NULL, NULL );
 
-  // while ( 1 ) {
+	pa_error = Pa_Initialize();
+	if ( pa_error != paNoError ) {
+		fprintf( stderr, "Error: %s\n", "Pa_Initialize() failed." );
+		goto fail;
+	}
+	pa_initialized = 1;
 
-  //   count = openmpt_module_read_interleaved_stereo( mod, SAMPLERATE, BUFFERSIZE, buffer );
-  //   if ( count == 0 ) {
-  //     break;
-  //   }
+	pa_error = Pa_OpenDefaultStream( &stream, 0, 2, paInt16 | paNonInterleaved, SAMPLERATE, paFramesPerBufferUnspecified, NULL, NULL );
+	if ( pa_error == paSampleFormatNotSupported ) {
+		is_interleaved = 1;
+		pa_error = Pa_OpenDefaultStream( &stream, 0, 2, paInt16, SAMPLERATE, paFramesPerBufferUnspecified, NULL, NULL );
+	}
+	if ( pa_error != paNoError ) {
+		fprintf( stderr, "Error: %s\n", "Pa_OpenStream() failed." );
+		goto fail;
+	}
+	if ( !stream ) {
+		fprintf( stderr, "Error: %s\n", "Pa_OpenStream() failed." );
+		goto fail;
+	}
 
-  //   written = xwrite( STDOUT_FILENO, buffer, count * 2 * sizeof( int16_t ) );
-  //   if ( written == 0 ) {
-  //     fprintf( stderr, "Error: %s\n", "write() failed." );
-  //     goto fail;
-  //   }
-  // }
+	pa_error = Pa_StartStream( stream );
+	if ( pa_error != paNoError ) {
+		fprintf( stderr, "Error: %s\n", "Pa_StartStream() failed." );
+		goto fail;
+	}
 
-  int32_t speed = openmpt_module_get_current_speed(mod);
+	while ( 1 ) {
 
-  printf("speed: %d\n", speed);
+		openmpt_module_error_clear( mod );
+		count = is_interleaved ? openmpt_module_read_interleaved_stereo( mod, SAMPLERATE, BUFFERSIZE, interleaved_buffer ) : openmpt_module_read_stereo( mod, SAMPLERATE, BUFFERSIZE, left, right );
+		mod_err = openmpt_module_error_get_last( mod );
+		mod_err_str = openmpt_module_error_get_last_message( mod );
+		if ( mod_err != OPENMPT_ERROR_OK ) {
+			libopenmpt_example_print_error( "openmpt_module_read_stereo()", mod_err, mod_err_str );
+			openmpt_free_string( mod_err_str );
+			mod_err_str = NULL;
+		}
+		if ( count == 0 ) {
+			break;
+		}
 
-  result = 0;
+		pa_error = is_interleaved ? Pa_WriteStream( stream, interleaved_buffer, (unsigned long)count ) : Pa_WriteStream( stream, buffers, (unsigned long)count );
+		if ( pa_error == paOutputUnderflowed ) {
+			pa_error = paNoError;
+		}
+		if ( pa_error != paNoError ) {
+			fprintf( stderr, "Error: %s\n", "Pa_WriteStream() failed." );
+			goto fail;
+		}
+	}
 
-  goto cleanup;
+	result = 0;
+
+	goto cleanup;
 
 fail:
 
-  result = 1;
+	result = 1;
 
 cleanup:
 
-  if ( mod ) {
-    openmpt_module_destroy( mod );
-    mod = 0;
-  }
+	if ( stream ) {
+		if ( Pa_IsStreamActive( stream ) == 1 ) {
+			Pa_StopStream( stream );
+		}
+		Pa_CloseStream( stream );
+		stream = 0;
+	}
 
-  if ( file ) {
-    fclose( file );
-    file = 0;
-  }
+	if ( pa_initialized ) {
+		Pa_Terminate();
+		pa_initialized = 0;
+	}
 
-  return result;
+	if ( mod ) {
+		openmpt_module_destroy( mod );
+		mod = 0;
+	}
+
+	if ( file ) {
+		fclose( file );
+		file = 0;
+	}
+
+	return result;
 }
