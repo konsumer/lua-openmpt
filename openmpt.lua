@@ -423,7 +423,34 @@ FFI_INCLUDED["/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platfo
 FFI_INCLUDED["/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/i386/_types.h"] = true
 FFI_INCLUDED["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.0/include/__stddef_max_align_t.h"] = true
 FFI_INCLUDED["/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/i386/types.h"] = true
+ 
+
+local OpenMpt = {}
+OpenMpt.__index = OpenMpt
+
+function OpenMpt:new(filename)
+    local openmpt = ffi.load("openmpt")
+    local f = io.open (filename, 'r')
+    contents = f:read("*all")
+    f:close()
+    local this = {
+        openmpt = openmpt,
+        filename = filename,
+        module = openmpt.openmpt_module_create_from_memory2(contents, #contents, nil, nil, nil, nil, nil, nil, nil)
+    }
+    setmetatable(this, OpenMpt)
+    return this
+end
+
+function OpenMpt:speed()
+  return self.openmpt.openmpt_module_get_current_speed(self.module)
+end
+
+function OpenMpt:tempo()
+  return self.openmpt.openmpt_module_get_current_tempo(self.module)
+end
+
+return OpenMpt
 
 
 
-openmpt = ffi.load("openmpt")
