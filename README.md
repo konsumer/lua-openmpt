@@ -4,8 +4,8 @@ This is a lua wrapper for [libopenmpt](https://lib.openmpt.org/libopenmpt/). It 
 
 ## usage
 
-On Ubuntu I ran `apt install libopenmpt-dev`.
+On Ubuntu 20.04, I ran `apt install luajit libopenmpt-dev`.
 
-Run `luajit test.lua` to test it out.
+Run `luajit demo_info.lua` to test it out.
 
-Copy [openmpt.lua](openmpt.lua) into your project, and have a look at [test.lua](test.lua) for an idea of how to use it.
+Copy [openmpt.lua](openmpt.lua) into your project, and have a look at `demo_*` files for an idea of how to use it. `demo_love` is a player exmaple.
