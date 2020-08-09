@@ -24,14 +24,17 @@ function love.load()
   modLength = mod:get_duration_seconds()
   modTitle = mod:get_metadata("title")
   modArtist = mod:get_metadata("artist")
-  love.window.setTitle(modTitle)
-  love.window.setMode(20 + (modChannelCount*30), 325)
   if modTitle == "" then
     modTitle = "Untitled"
   end
   if modArtist == "" then
     modArtist = "Unknown"
   end
+  
+  -- set window title & size, based on song
+  love.window.setTitle(modTitle)
+  love.window.setMode(20 + (modChannelCount*30), 325)
+
   sd = love.sound.newSoundData(bufferSize, samplingRate, bitDepth, channelCount)
   qs = love.audio.newQueueableSource(samplingRate, bitDepth, channelCount)
 end
