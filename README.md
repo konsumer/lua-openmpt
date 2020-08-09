@@ -6,7 +6,12 @@ This is a lua wrapper for [libopenmpt](https://lib.openmpt.org/libopenmpt/). It 
 
 Run `luajit info.lua` to test it out.
 
-Copy [openmpt.lua](openmpt.lua) into your project. Examples: [main.lua](main.lua) is a love2d player example, and [info.lua](info.lua) shows how to use it in luajit, with a real filepath.
+Copy [openmpt.lua](openmpt.lua) into your project.
+
+Examples:
+
+* [main.lua](main.lua) is a love2d player example
+* [info.lua](info.lua) shows how to use it in luajit, with a real filepath
 
 ### linux
 
