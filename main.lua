@@ -1,7 +1,7 @@
 -- this will play a mod file
 -- run with love ./demo_love
 
-local OpenMPT = require "../openmpt"
+local OpenMPT = require "openmpt"
 
 local bitDepth = 16
 local samplingRate = 44100
