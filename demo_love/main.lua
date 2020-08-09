@@ -1,4 +1,4 @@
--- this will play a mod file and show some stuff on the consol
+-- this will play a mod file
 -- run with love ./demo_love
 
 local OpenMPT = require "../openmpt"
@@ -25,7 +25,6 @@ function love.update(dt)
     pointer = pointer + 1
     dspTime = dspTime + (1 / samplingRate)
     if pointer >= sd:getSampleCount() then
-      mod:set_position_seconds(dspTime)
       pointer = 0
       qs:queue(sd)
       qs:play()
