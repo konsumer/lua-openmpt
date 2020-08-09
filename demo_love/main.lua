@@ -3,15 +3,25 @@
 
 local OpenMPT = require "../openmpt"
 
-bitDepth = 16
-samplingRate = 44100
-channelCount = 2
-bufferSize = 2048
-pointer = 0
+local bitDepth = 16
+local samplingRate = 44100
+local channelCount = 2
+local bufferSize = 1024
+local pointer = 0
+local currentBpm = 0
+local modChannelCount = 0
+local modInstCount = 0
+local modSpeed = 0
+local modTempo = 0
+local modLength = 0
 
-local mod = OpenMPT:new("./plainsong.xm")
+local mod
 
 function love.load()
+  mod = OpenMPT:new("./plainsong.xm")
+  modChannelCount = mod:get_num_channels()
+  modInstCount = mod:get_num_instruments()
+  modLength = mod:get_duration_seconds()
   sd = love.sound.newSoundData(bufferSize, samplingRate, bitDepth, channelCount)
   qs = love.audio.newQueueableSource(samplingRate, bitDepth, channelCount)
 end
@@ -20,6 +30,9 @@ function love.update(dt)
   if qs:getFreeBufferCount() == 0 then return end
   local samplesToMix = bufferSize
   mod:read_interleaved_stereo(samplingRate, bufferSize, sd:getFFIPointer())
+  currentBpm = mod:get_current_estimated_bpm()
+  modSpeed = mod:get_current_speed()
+  modTempo = mod:get_current_tempo()
   for smp = 0, samplesToMix-1 do
     pointer = pointer + 1
     if pointer >= sd:getSampleCount() then
@@ -28,4 +41,13 @@ function love.update(dt)
       qs:play()
     end
   end
+end
+
+function love.draw()
+  love.graphics.print( "Current BPM: " .. currentBpm, 10,10 )
+  love.graphics.print( "Speed: " .. modSpeed, 10,25 )
+  love.graphics.print( "Tempo: " .. modTempo, 10,40 )
+  love.graphics.print( "Channels #: " .. modChannelCount, 10,55 )
+  love.graphics.print( "Instruments #: " .. modInstCount, 10,70 )
+  love.graphics.print( "Song Length (s): " .. modLength, 10,85 )
 end
