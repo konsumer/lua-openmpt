@@ -12,6 +12,8 @@ local modChannelCount = 0
 local modInstCount = 0
 local modLength = 0
 local modPosition = 0
+local modTitle = ""
+local modArtist = ""
 
 local mod
 
@@ -20,6 +22,16 @@ function love.load()
   modChannelCount = mod:get_num_channels()
   modInstCount = mod:get_num_instruments()
   modLength = mod:get_duration_seconds()
+  modTitle = mod:get_metadata("title")
+  modArtist = mod:get_metadata("artist")
+  love.window.setTitle(modTitle)
+  love.window.setMode(20 + (modChannelCount*30), 325)
+  if modTitle == "" then
+    modTitle = "Untitled"
+  end
+  if modArtist == "" then
+    modArtist = "Unknown"
+  end
   sd = love.sound.newSoundData(bufferSize, samplingRate, bitDepth, channelCount)
   qs = love.audio.newQueueableSource(samplingRate, bitDepth, channelCount)
 end
@@ -43,17 +55,18 @@ function love.update(dt)
 end
 
 function love.draw()
-  love.graphics.print( "Current BPM: " .. mod:get_current_estimated_bpm(), 10,10 )
-  love.graphics.print( "Speed: " .. mod:get_current_speed(), 10,25 )
-  love.graphics.print( "Tempo: " .. mod:get_current_tempo(), 10,40 )
-  love.graphics.print( "Current Pattern: " .. mod:get_current_pattern(), 10,55 )
-  love.graphics.print( "Channels: " .. modChannelCount, 10,70 )
-  love.graphics.print( "Instruments: " .. modInstCount, 10,85 )
-  love.graphics.print( "Position (s): " .. modPosition .. " / " .. modLength, 10,100 )
+  love.graphics.print( modTitle .. " by " .. modArtist, 10,10 )
+  love.graphics.print( "Current BPM: " .. mod:get_current_estimated_bpm(), 10,25 )
+  love.graphics.print( "Speed: " .. mod:get_current_speed(), 10,40 )
+  love.graphics.print( "Tempo: " .. mod:get_current_tempo(), 10,55 )
+  love.graphics.print( "Current Pattern: " .. mod:get_current_pattern(), 10,70 )
+  love.graphics.print( "Channels: " .. modChannelCount, 10,85 )
+  love.graphics.print( "Instruments: " .. modInstCount, 10,100 )
+  love.graphics.print( "Position (s): " .. modPosition .. " / " .. modLength, 10,115 )
 
   for channel=0,(modChannelCount - 1) do
-    love.graphics.print( string.format(" %02d", channel+1), 10 + (channel*30), 300 )
     local vu = mod:get_current_channel_vu_mono(channel)
     love.graphics.rectangle("fill", 10 + (channel*30), 300, 20, -100 * vu )
+    love.graphics.print( string.format(" %02d", channel+1), 10 + (channel*30), 300 )
   end
 end
