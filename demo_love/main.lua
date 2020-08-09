@@ -18,15 +18,13 @@ local modPatternNum = 0
 
 local mod
 
-mod = OpenMPT:new("./plainsong.xm")
+function love.load()
+  mod = OpenMPT:new("./plainsong.xm")
   modChannelCount = mod:get_num_channels()
   modInstCount = mod:get_num_instruments()
   modLength = mod:get_duration_seconds()
   sd = love.sound.newSoundData(bufferSize, samplingRate, bitDepth, channelCount)
   qs = love.audio.newQueueableSource(samplingRate, bitDepth, channelCount)
-
-function love.load()
-  
 end
 
 function love.update(dt)
@@ -57,8 +55,8 @@ function love.draw()
   love.graphics.print( "Song Length (s): " .. modLength, 10,100 )
 
   for channel=0,(modChannelCount - 1) do
-    love.graphics.print( string.format(" %02d", channel+1), 10 + (channel*30), 125 )
+    love.graphics.print( string.format(" %02d", channel+1), 10 + (channel*30), 300 )
     local vu = mod:get_current_channel_vu_mono(channel)
-    love.graphics.rectangle("fill", 10 + (channel*30), 140, 20, 200 * vu )
+    love.graphics.rectangle("fill", 10 + (channel*30), 300, 20, -100 * vu )
   end
 end
