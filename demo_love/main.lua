@@ -11,6 +11,7 @@ local pointer = 0
 local modChannelCount = 0
 local modInstCount = 0
 local modLength = 0
+local modPosition = 0
 
 local mod
 
@@ -27,6 +28,10 @@ function love.update(dt)
   if qs:getFreeBufferCount() == 0 then return end
   local samplesToMix = bufferSize
   mod:read_interleaved_stereo(samplingRate, bufferSize, sd:getFFIPointer())
+  modPosition = mod:get_position_seconds()
+  if modPosition >= modLength then
+    mod:set_position_seconds(0)
+  end
   for smp = 0, samplesToMix-1 do
     pointer = pointer + 1
     if pointer >= sd:getSampleCount() then
@@ -44,7 +49,7 @@ function love.draw()
   love.graphics.print( "Current Pattern: " .. mod:get_current_pattern(), 10,55 )
   love.graphics.print( "Channels: " .. modChannelCount, 10,70 )
   love.graphics.print( "Instruments: " .. modInstCount, 10,85 )
-  love.graphics.print( "Position (s): " .. mod:get_position_seconds() .. " / " .. modLength, 10,100 )
+  love.graphics.print( "Position (s): " .. modPosition .. " / " .. modLength, 10,100 )
 
   for channel=0,(modChannelCount - 1) do
     love.graphics.print( string.format(" %02d", channel+1), 10 + (channel*30), 300 )
