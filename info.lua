@@ -17,7 +17,7 @@ for k,v in pairs(mod:supported_extensions()) do
 end
 
 -- load a mod to get info about it
-mod:loadFullPath("./demo_love/strobe_-_android_assembled.xm")
+mod:loadFullPath("./strobe_-_android_assembled.xm")
 local channelCount = mod:get_num_channels()
 local instCount = mod:get_num_instruments()
 
