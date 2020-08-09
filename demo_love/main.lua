@@ -18,7 +18,7 @@ local modArtist = ""
 local mod
 
 function love.load()
-  mod = OpenMPT:new("./plainsong.xm")
+  mod = OpenMPT:new("./strobe_-_android_assembled.xm")
   modChannelCount = mod:get_num_channels()
   modInstCount = mod:get_num_instruments()
   modLength = mod:get_duration_seconds()
