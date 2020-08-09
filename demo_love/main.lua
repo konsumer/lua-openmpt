@@ -5,10 +5,9 @@ local OpenMPT = require "../openmpt"
 
 bitDepth = 16
 samplingRate = 44100
-channelCount = 1
+channelCount = 2
 bufferSize = 2048
 pointer = 0
-dspTime = 0.0
 
 local mod = OpenMPT:new("./plainsong.xm")
 
@@ -20,10 +19,9 @@ end
 function love.update(dt)
   if qs:getFreeBufferCount() == 0 then return end
   local samplesToMix = bufferSize
-  mod:read_mono(samplingRate, bufferSize, sd:getFFIPointer())
+  mod:read_interleaved_stereo(samplingRate, bufferSize, sd:getFFIPointer())
   for smp = 0, samplesToMix-1 do
     pointer = pointer + 1
-    dspTime = dspTime + (1 / samplingRate)
     if pointer >= sd:getSampleCount() then
       pointer = 0
       qs:queue(sd)
