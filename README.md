@@ -4,6 +4,8 @@ This is a lua wrapper for [libopenmpt](https://lib.openmpt.org/libopenmpt/). It 
 
 ## usage
 
+Copy [openmpt.lua](./openmpt.lua) into your project, and look at the demos for how to use it. You will also need libopenmpt installed in your library path.
+
 ### linux
 
 On Ubuntu 20.04, I ran `apt install luajit libopenmpt-dev`.
