@@ -40,14 +40,8 @@ function love.update(dt)
   if modPosition >= modLength then
     mod:set_position_seconds(0)
   end
-  for smp = 0, samplesToMix-1 do
-    pointer = pointer + 1
-    if pointer >= sd:getSampleCount() then
-      pointer = 0
-      qs:queue(sd)
-      qs:play()
-    end
-  end
+  qs:queue(sd)
+  qs:play()
 end
 
 function love.draw()
