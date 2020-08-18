@@ -28,20 +28,23 @@ function love.load()
   if modArtist == "" then modArtist = "Unknown" end
   love.window.setTitle(modTitle)
   love.window.setMode(20 + (modChannelCount*30), 325)
+  
+  -- setup your audio buffer
   sd = love.sound.newSoundData(bufferSize, samplingRate, bitDepth, channelCount)
   qs = love.audio.newQueueableSource(samplingRate, bitDepth, channelCount)
 end
 
 function love.update(dt)
+  -- pump audio from mod into buffer
   if qs:getFreeBufferCount() == 0 then return end
-  local samplesToMix = bufferSize
   mod:read_interleaved_stereo(samplingRate, bufferSize, sd:getFFIPointer())
-  modPosition = mod:get_position_seconds()
-  if modPosition >= modLength then
-    mod:set_position_seconds(0)
-  end
   qs:queue(sd)
   qs:play()
+  
+  -- loop song
+  if mod:get_position_seconds() >= modLength then
+    mod:set_position_seconds(0)
+  end
 end
 
 function love.draw()
