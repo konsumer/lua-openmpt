@@ -13,7 +13,7 @@ Examples:
 
 ### linux
 
-On Ubuntu 20.04, I ran `apt install luajit libopenmpt-dev`.
+On Ubuntu 20.04, I ran `sudo apt install luajit libopenmpt-dev`.
 
 ### mac
 

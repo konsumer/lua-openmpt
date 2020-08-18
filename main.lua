@@ -52,7 +52,8 @@ end
 
 function love.draw()
   love.graphics.print( modTitle .. " by " .. modArtist, 10,10 )
-  love.graphics.print( "Current BPM: " .. mod:get_current_estimated_bpm(), 10,25 )
+  -- bpm isn't working on linux
+  -- love.graphics.print( "Current BPM: " .. mod:get_current_estimated_bpm(), 10,25 )
   love.graphics.print( "Speed: " .. mod:get_current_speed(), 10,40 )
   love.graphics.print( "Tempo: " .. mod:get_current_tempo(), 10,55 )
   love.graphics.print( "Current Pattern: " .. mod:get_current_pattern(), 10,70 )
